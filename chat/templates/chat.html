@@ -1,149 +1,142 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>💬 Chat Room - {{ room_name }}</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #1e1e2f;
-            color: #f0f0f0;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100vh;
-        }
-
-        h2 {
-            margin-top: 20px;
-            font-size: 28px;
-            color: #00ffcc;
-        }
-
-        #chat-container {
-            background-color: #2c2f3a;
-            width: 80%;
-            max-width: 800px;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            margin-bottom: 20px;
-        }
-
-        #chat-log {
-            flex: 1;
-            height: 400px;
-            overflow-y: auto;
-            border: 1px solid #444;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            background-color: #1c1c2b;
-        }
-
-        #chat-log div {
-            margin: 8px 0;
-            padding: 6px 10px;
-            background: #00ffcc21;
-            border-left: 4px solid #00ffcc;
-            border-radius: 5px;
-            animation: fadeIn 0.2s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        #chat-message-input, #username {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            width: 40%;
-            margin-right: 10px;
-        }
-
-        button {
+  <meta charset="UTF-8">
+  <title>🔥 Chat Room - {{ room_name }}</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(120deg, #1c1c2b, #0f0f17);
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+    }
+    h2 {
+      font-size: 28px;
+      margin: 20px 0 10px;
+      color: #00ffd5;
+    }
+    #chat-container {
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      width: 90%;
+      max-width: 800px;
+      height: 75vh;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      box-shadow: 0 0 20px #00ffd52a;
+    }
+    #chat-log {
+      flex: 1;
+      overflow-y: auto;
+      border-radius: 8px;
+      padding: 10px;
+      background-color: #1e1e2f;
+      margin-bottom: 15px;
+    }
+    #chat-log div {
+      background-color: #00ffd510;
+      margin: 8px 0;
+      padding: 10px 15px;
+      border-left: 5px solid #00ffd5;
+      border-radius: 8px;
+      animation: slideIn 0.2s ease-in;
+    }
+    @keyframes slideIn {
+      from { transform: translateX(-10px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    #input-container {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    #chat-message-input {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      background: #2a2a3d;
+      color: white;
+    }
+    button {
             padding: 12px 20px;
-            background-color: #00ffcc;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 16px;
+            background: linear-gradient(45deg, #00ffc3, #00aaff);
+            color: #000;
+            font-weight: bold;
             cursor: pointer;
-            transition: background 0.2s ease;
+            transition: all 0.2s ease;
         }
 
         button:hover {
-            background-color: #00ddb0;
+            transform: scale(1.05);
+            box-shadow: 0 0 10px #00ffc3aa;
         }
 
-        #input-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
+        ::selection {
+            background-color: #00ffc366;
         }
-    </style>
+
+  </style>
 </head>
 <body>
-
-    <h2>Welcome to Room: <span id="room-name">{{ room_name }}</span></h2>
-
-    <div id="chat-container">
-        <div id="chat-log"></div>
-
-        <div id="input-container">
-            <input id="username" type="text" placeholder="Your name..." />
-            <input id="chat-message-input" type="text" placeholder="Type your message..." autofocus />
-            <button onclick="send()">Send</button>
-        </div>
+  <h2>🔥 Room: <span id="room-name">{{ room_name }}</span></h2>
+  <div id="chat-container">
+    <div id="chat-log"></div>
+    <div id="input-container">
+      <input id="chat-message-input" type="text" placeholder="Type a message..." autofocus>
+      <button onclick="send()">Send</button>
     </div>
+  </div>
 
-    <script>
-        const roomName = "{{ room_name }}";
-        document.getElementById("room-name").textContent = roomName;
+  <script>
+    const username = prompt("Enter your username:") || "Guest";
+    const room = "{{ room_name }}";
+    const chatSocket = new WebSocket(
+      'ws://' + window.location.host + '/ws/chat/' + room + '/'
+    );
 
-        const chatSocket = new WebSocket(
-            'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
-        );
+    chatSocket.onmessage = function(e) {
+      const data = JSON.parse(e.data);
+      const chatLog = document.getElementById('chat-log');
+      chatLog.innerHTML += `<div>${data.message}</div>`;
+      chatLog.scrollTop = chatLog.scrollHeight;
+    };
 
-        chatSocket.onmessage = function(e) {
-            const data = JSON.parse(e.data);
-            const chatLog = document.getElementById('chat-log');
-        
-            chatLog.innerHTML += `<div>${data.message}</div>`;
-            chatLog.scrollTop = chatLog.scrollHeight;
-        };
-        
+    chatSocket.onclose = function(e) {
+      console.error('Chat socket closed unexpectedly');
+    };
 
-        chatSocket.onclose = function(e) {
-            console.error('Chat socket closed unexpectedly');
-        };
+    function send() {
+      const input = document.getElementById('chat-message-input');
+      const message = input.value.trim();
+      if (message !== '') {
+        chatSocket.send(JSON.stringify({
+          'message': message,
+          'username': username,
+          'room': room
+        }));
+        input.value = '';
+      }
+    }
 
-        function send() {
-            const input = document.getElementById('chat-message-input');
-            const username = document.getElementById('username').value.trim();
-            const message = input.value.trim();
-
-            if (message !== '') {
-                chatSocket.send(JSON.stringify({
-                    'username': username,
-                    'message': message
-                }));
-                input.value = '';
-            }
-        }
-
-        document.getElementById("chat-message-input").addEventListener("keyup", function(e) {
-            if (e.key === "Enter") send();
-        });
-    </script>
+    document.getElementById("chat-message-input").addEventListener("keyup", function(e) {
+      if (e.key === "Enter") send();
+    });
+  </script>
 </body>
 </html>
