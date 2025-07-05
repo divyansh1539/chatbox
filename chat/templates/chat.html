@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>💬 Chat Room - {{ room_name }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1e1e2f;
+            color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h2 {
+            margin-top: 20px;
+            font-size: 28px;
+            color: #00ffcc;
+        }
+
+        #chat-container {
+            background-color: #2c2f3a;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            margin-bottom: 20px;
+        }
+
+        #chat-log {
+            flex: 1;
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #444;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background-color: #1c1c2b;
+        }
+
+        #chat-log div {
+            margin: 8px 0;
+            padding: 6px 10px;
+            background: #00ffcc21;
+            border-left: 4px solid #00ffcc;
+            border-radius: 5px;
+            animation: fadeIn 0.2s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #chat-message-input, #username {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            width: 40%;
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 12px 20px;
+            background-color: #00ffcc;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #00ddb0;
+        }
+
+        #input-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Welcome to Room: <span id="room-name">{{ room_name }}</span></h2>
+
+    <div id="chat-container">
+        <div id="chat-log"></div>
+
+        <div id="input-container">
+            <input id="username" type="text" placeholder="Your name..." />
+            <input id="chat-message-input" type="text" placeholder="Type your message..." autofocus />
+            <button onclick="send()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const roomName = "{{ room_name }}";
+        document.getElementById("room-name").textContent = roomName;
+
+        const chatSocket = new WebSocket(
+            'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
+        );
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            const chatLog = document.getElementById('chat-log');
+        
+            chatLog.innerHTML += `<div>${data.message}</div>`;
+            chatLog.scrollTop = chatLog.scrollHeight;
+        };
+        
+
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+        function send() {
+            const input = document.getElementById('chat-message-input');
+            const username = document.getElementById('username').value.trim();
+            const message = input.value.trim();
+
+            if (message !== '') {
+                chatSocket.send(JSON.stringify({
+                    'username': username,
+                    'message': message
+                }));
+                input.value = '';
+            }
+        }
+
+        document.getElementById("chat-message-input").addEventListener("keyup", function(e) {
+            if (e.key === "Enter") send();
+        });
+    </script>
+</body>
+</html>
